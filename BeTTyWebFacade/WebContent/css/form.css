@@ -1,0 +1,172 @@
+body {
+	font: Arial, Helvetica, sans-serif;
+}
+
+fieldset {
+	border: 1px dashed #CCC;
+	padding: 10px;
+	margin-top: 5px;
+}
+
+legend {
+	font-size: 85%;
+	line-height: 1.1;
+	color: #fff;
+	background: #666;
+	border: 1px solid #333;
+	padding: 2px 6px;
+}
+
+h1 {
+	font-size: 175%;
+	font-weight: 400;
+	line-height: 1.1;
+	color: #333;
+}
+
+label {
+	width: 250px;
+	height: 32px;
+	margin-top: 3px;
+	margin-right: 2px;
+	padding-top: 11px;
+	padding-left: 6px;
+	background-color: #CCC;
+	float: left;
+	display: block;
+	font-weight: 400;
+	line-height: 1.1;
+	color: #666;
+	font-size-adjust: 0.40;
+}
+
+span {
+	font-size: 100%;
+	color: #666;
+	font-size-adjust: 0.40;
+}
+
+
+#options {
+	text-decoration: underline;
+}
+
+#div_options {
+	display: none;
+}
+
+#container {
+	width: 850px;
+	margin: auto;
+	padding: 10px;
+}
+
+#top {
+	width: 680px;
+	height: 50px;
+}
+
+#leftSide {
+	width: 640px;
+	padding-top: 30px;
+	float: left;
+}
+
+.right {
+	border: 1px solid #CCC;
+	margin: 2px;
+}
+
+#errors {
+	margin-top: 20px;
+	display: none;
+}
+/*
+This container mark not to flow in different resolutions
+*/
+#rcontainerparent {
+	float: left;
+}
+
+#rcontainer {
+	background-color: #fff;
+	width: 200px;
+	margin-top: 40px;
+	font: normal 12px Arial;
+	color: #666;
+	position: fixed;
+}
+
+.errorheader {
+	font: bolder 12px Arial;
+	color: red;
+}
+
+.clear {
+	clear: both;
+}
+
+.div_input {
+	float: right;
+	background-color: #E6E6E6;
+	height: 35px;
+	margin-top: 3px;
+	padding-top: 5px;
+	padding-bottom: 3px;
+	padding-left: 5px;
+	width: 350px;
+}
+
+.div_texbox {
+	
+}
+
+.div_checkbox {
+	width: 350px;
+	vertical-align: middle;
+}
+
+.button_div {
+	width: 287px;
+	float: right;
+	background-color: #fff;
+	text-align: right;
+	height: 35px;
+	margin-top: 3px;
+	padding: 5px 3px 3px;
+}
+
+input {
+	font-size: 12px;
+	color: #666;
+	border: solid 2px #CCC;
+	margin-right: 6px;
+	padding: 4px;
+}
+
+.vanadium-advice.vanadium-invalid,.vanadium-advice.vanadium-invalid * {
+	color: red;
+}
+
+input.vanadium-valid {
+	border-color: #ADFF2F;
+}
+
+input.vanadium-invalid {
+	border-color: red;
+}
+
+#messages {
+	height: 70px;
+	border-color: #FF0;
+	padding: 0;
+}
+
+#options {
+	cursor: pointer;
+}
+
+#showoptions {
+	padding-top: 10px;
+	color: gray;
+}
