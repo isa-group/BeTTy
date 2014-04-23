@@ -50,8 +50,8 @@ import es.us.isa.utils.BettyException;
 
 public class AttributedFMGenerator extends AbstractFMGeneratorDecorator {
 
-	private DistributionFunction defaultValueDistribution;
-	private DistributionFunction nullValueDistribution;
+	protected DistributionFunction defaultValueDistribution;
+	protected DistributionFunction nullValueDistribution;
 	public AttributedFMGenerator(IGenerator gen) {
 		super(gen);
 	}
@@ -194,7 +194,7 @@ public class AttributedFMGenerator extends AbstractFMGeneratorDecorator {
 		}
 	}
 
-	private Collection<GenericAttribute> generateAttributes(AttributedCharacteristic ch) {
+	public Collection<GenericAttribute> generateAttributes(AttributedCharacteristic ch) {
 		// TODO Auto-generated method stub
 		Collection<GenericAttribute> attributes2return = new ArrayList<GenericAttribute>();
 		for(int i=0;i<ch.getNumberOfAttibutesPerFeature();i++){
