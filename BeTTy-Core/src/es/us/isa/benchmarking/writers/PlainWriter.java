@@ -17,126 +17,217 @@
 
 package es.us.isa.benchmarking.writers;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import es.us.isa.FAMA.models.FAMAfeatureModel.Dependency;
-import es.us.isa.FAMA.models.FAMAfeatureModel.ExcludesDependency;
-import es.us.isa.FAMA.models.FAMAfeatureModel.FAMAFeatureModel;
-import es.us.isa.FAMA.models.FAMAfeatureModel.Feature;
-import es.us.isa.FAMA.models.FAMAfeatureModel.Relation;
-import es.us.isa.FAMA.models.FAMAfeatureModel.RequiresDependency;
+import es.us.isa.FAMA.Exceptions.FAMAException;
+import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.AttributedFeature;
+import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.FAMAAttributedFeatureModel;
+import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.Relation;
+import es.us.isa.FAMA.models.domain.Domain;
+import es.us.isa.FAMA.models.domain.IntegerDomain;
+import es.us.isa.FAMA.models.domain.ObjectDomain;
+import es.us.isa.FAMA.models.domain.Range;
+import es.us.isa.FAMA.models.domain.RangeIntegerDomain;
 import es.us.isa.FAMA.models.featureModel.Cardinality;
+import es.us.isa.FAMA.models.featureModel.Constraint;
+import es.us.isa.FAMA.models.featureModel.extended.GenericAttribute;
 import es.us.isa.FAMA.models.variabilityModel.VariabilityModel;
 import es.us.isa.FAMA.models.variabilityModel.parsers.IWriter;
 
 public class PlainWriter implements IWriter {
-	private String res = "%Relationships\n";
-	private Collection<Feature> processedFeatures = new ArrayList<Feature>();
 
-	@Override()
+	private BufferedWriter writer = null;
+	private FAMAAttributedFeatureModel fm = null;
+	private Collection<String> relationshipsCol = new ArrayList<String>();
+	private Collection<String> attributesCol = new ArrayList<String>();
+	private Collection<String> constraintsCol = new ArrayList<String>();
+	private Collection<AttributedFeature> usedFeats = new ArrayList<AttributedFeature>();
+
 	public void writeFile(String fileName, VariabilityModel vm)
 			throws Exception {
-		FAMAFeatureModel fm = (FAMAFeatureModel) vm;
-		processTree(fm.getRoot());
-		processCross(fm);
-		FileWriter out = new FileWriter(fileName);
-		out.write(res);
-		out.flush();
-		out.close();
+
+		File file = new File(fileName);
+		fm = (FAMAAttributedFeatureModel) vm;
+
+		writer = new BufferedWriter(new FileWriter(file));
+
+		generateStringsCols();
+
+		Iterator<String> relColIt = relationshipsCol.iterator();
+		Iterator<String> attColIt = attributesCol.iterator();
+		Iterator<String> consColIt = constraintsCol.iterator();
+
+		while (relColIt.hasNext()) {
+			writer.write(relColIt.next());
+			writer.write("\n");// blank
+		}
+		writer.write("\n");// blank
+
+		while (attColIt.hasNext()) {
+			writer.write(attColIt.next());
+			writer.write("\n");// blank
+		}
+		writer.write("\n");// blank
+
+		while (consColIt.hasNext()) {
+			writer.write(consColIt.next());// el maquina de jesus tenia hecho el
+			// recorrido inorden del AST xD
+			writer.write("\n");// blank
+		}
+		writer.write("\n");// blank
+
+		writer.flush();
+		writer.close();
+
 	}
 
-	private void processTree(Feature feat) {
-		if (!processedFeatures.contains(feat)&&!isLeaf(feat)) {
-			processedFeatures.add(feat);
-			res += transformString(feat.toString()) + " : ";
-			Iterator<Relation> relIt = feat.getRelations();
+	private void generateStringsCols() {
+
+		relationshipsCol.add("%Relationships");
+		attributesCol.add("%Attributes");
+		constraintsCol.add("%Constraints");
+
+		recursiveWay(fm.getRoot());
+		// Ahora las constraints
+		Iterator<Constraint> constIt = fm.getConstraints().iterator();
+		while (constIt.hasNext()) {
+			Constraint cons = constIt.next();
+			if (!(cons.toString() == " ")
+					|| !constraintsCol.contains(cons.toString() + ";"))
+				constraintsCol.add(cons.toString() + ";");
+		}
+
+		// rel &attribs
+		// las constrainsts aparte// recorrido del ast
+	}
+
+	private void recursiveWay(AttributedFeature feat) {
+		// Pillamos los atributos de la feature
+		usedFeats.add(feat);
+		Iterator<GenericAttribute> attIt = feat.getAttributes().iterator();
+		while (attIt.hasNext()) {
+
+			GenericAttribute att = attIt.next();
+			String attLine = feat.getName() + "." + att.getName() + ": ";
+
+			// Pillamos los dominios
+			Domain domain = att.getDomain();
+			String domainStr = "";
+			if (domain instanceof RangeIntegerDomain) {
+				domainStr += "Integer";
+				Iterator<Range> rangesIt = ((RangeIntegerDomain) domain)
+						.getRanges().iterator();
+				while (rangesIt.hasNext()) {
+					Range range = rangesIt.next();
+					domainStr += "[" +range.getMin() + " to " + range.getMax() + "]";
+				}
+//				domainStr = domainStr.substring(0, domainStr.length() - 1);
+			} else if (domain instanceof IntegerDomain) {
+				domainStr += "Integer [";
+				Iterator<Integer> domIt = domain.getAllIntegerValues()
+						.iterator();
+				while (domIt.hasNext()) {
+					domainStr += domIt.next().toString() + ",";
+				}
+				domainStr = domainStr.substring(0, domainStr.length() - 1);
+				domainStr += "]";
+
+
+			} else if (domain instanceof ObjectDomain) {
+				ObjectDomain dom = ((ObjectDomain) domain);
+				if (dom.getObjectValues().size()>0){
+				domainStr += "[";
+
+				Iterator<Object> domIt = dom
+						.getObjectValues().iterator();
+				while (domIt.hasNext()) {
+					domainStr += domIt.next().toString() + ",";
+				}
+				domainStr = domainStr.substring(0, domainStr.length() - 1);
+				domainStr += "]";
+				}
+			}
+			
+			
+				attributesCol.add(attLine + domainStr + ","
+						+ att.getDefaultValue() + "," + att.getNullValue()
+						+ ";");
+
+			
+		}
+		// Origens
+		Iterator<Relation> relIt = feat.getRelations();
+		if (feat.getNumberOfRelations() > 0) {
+			String relsStr = feat.getName() + " : ";
 			while (relIt.hasNext()) {
 				Relation rel = relIt.next();
-				Cardinality card = rel.getCardinalities().next();
-				Iterator<Feature> childIt = rel.getDestination();
+				Iterator<AttributedFeature> destIt = rel.getDestination();
 
-				// Add the relation
 				if (rel.isMandatory()) {
-					while (childIt.hasNext()) {
-						Feature child = childIt.next();
-						res += transformString(child.getName()) + " ";
+					while (destIt.hasNext()) {
+						AttributedFeature dest = destIt.next();
+						relsStr += " " + dest.getName() + " ";
+
 					}
 				} else if (rel.isOptional()) {
-					while (childIt.hasNext()) {
-						Feature child = childIt.next();
-						res += "[" + transformString(child.getName()) + "] ";
+					while (destIt.hasNext()) {
+						AttributedFeature dest = destIt.next();
+						relsStr += "[" + dest.getName() + "] ";
+
 					}
 				} else {
-					res += "[" + card.getMin() + "," + card.getMax() + "] {";
-					while (childIt.hasNext()) {
-						Feature child = childIt.next();
-						res += " " + transformString(child.getName());
+
+					Iterator<Cardinality> cardIt = rel.getCardinalities();
+					relsStr += "[";
+
+					while (cardIt.hasNext()) {
+						Cardinality card = cardIt.next();
+						relsStr += card.getMin() + "," + card.getMax();
+
 					}
-					res += " } ";
-					
+					relsStr += "] {";
+					while (destIt.hasNext()) {
+						AttributedFeature dest = destIt.next();
+						relsStr += dest.getName() + " ";
+
+					}
+					relsStr += "}";
+
 				}
-				
+
 			}
-			res+=";\r\n";
+			relationshipsCol.add(relsStr + ";");
 			relIt = feat.getRelations();
 			while (relIt.hasNext()) {
 				Relation rel = relIt.next();
-				Iterator<Feature> childIt = rel.getDestination();
-				childIt = rel.getDestination();
-				while (childIt.hasNext()) {
-					processTree(childIt.next());
+
+				Iterator<AttributedFeature> destIt = rel.getDestination();
+				while (destIt.hasNext()) {
+					AttributedFeature dest = destIt.next();
+
+					if (!usedFeats.contains(dest)) {
+						recursiveWay(dest);
+						usedFeats.add(dest);
+					}
 				}
 			}
 		}
-	}
 
-	private boolean isLeaf(Feature feat) {
-		return feat.getNumberOfRelations() ==0;
-	}
-
-	private void processCross(FAMAFeatureModel vm) {
-		res += "%Constraints\n";
-
-		Iterator<Dependency> it = vm.getDependencies();
-
-		while (it.hasNext()) {
-			Dependency dep = it.next();
-
-			if (dep instanceof RequiresDependency) {
-				res +=  transformString(dep.getOrigin().getName())
-						+ " REQUIRES " 
-						+ transformString(dep.getDestination().getName())
-						+ ";\n";
-			} else if (dep instanceof ExcludesDependency) {
-				res += transformString(dep.getOrigin().toString())
-						+ " EXCLUDES "
-						+ transformString(dep.getDestination().getName())
-						+ ";\n";
-
+		// Hay que procesar los invariantes
+		if (feat.getInvariants().size() > 0) {
+			String invStr = feat.getName() + "{\n";
+			Iterator<Constraint> invIt = feat.getInvariants().iterator();
+			while (invIt.hasNext()) {
+				Constraint cons = invIt.next();
+				invStr += "\t" + cons.toString() + "\n";
 			}
+			constraintsCol.add(invStr + "}");
 		}
 
-	}
-
-	private String transformString(String str) {
-//		String res = "";
-//		StringTokenizer stTexto = new StringTokenizer(str);
-//
-//		while (stTexto.hasMoreElements()) {
-//
-//			String tmp = stTexto.nextElement().toString().toLowerCase();
-//			String first = tmp.substring(0, 1);
-//			res += (first.toUpperCase() + tmp.substring(1)).replaceAll("\\,",
-//					"").replaceAll("\\+", "plus").replaceAll("\\.", "")
-//					.replaceAll("\\/", "").replaceAll("\\(", "").replaceAll(
-//							"\\)", "").replaceAll("-", "")
-//					.replaceAll("\\�", "").replaceAll("\\&", "").replaceAll(
-//							":", "").replaceAll("\\'", "").replaceAll("#","");
-//		}
-//		res="\'"+str+"\'";
-		return str;
 	}
 }
