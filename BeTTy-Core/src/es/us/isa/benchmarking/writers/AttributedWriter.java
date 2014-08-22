@@ -25,10 +25,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.AttributedFeature;
-import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.ExcludesDependency;
 import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.FAMAAttributedFeatureModel;
 import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.Relation;
-import es.us.isa.FAMA.models.FAMAAttributedfeatureModel.RequiresDependency;
 import es.us.isa.FAMA.models.domain.Domain;
 import es.us.isa.FAMA.models.domain.IntegerDomain;
 import es.us.isa.FAMA.models.domain.ObjectDomain;
@@ -39,6 +37,22 @@ import es.us.isa.FAMA.models.featureModel.Constraint;
 import es.us.isa.FAMA.models.featureModel.extended.GenericAttribute;
 import es.us.isa.FAMA.models.variabilityModel.VariabilityModel;
 import es.us.isa.FAMA.models.variabilityModel.parsers.IWriter;
+/**
+ * 	This file is part of FaMaTS.
+ *
+ *     FaMaTS is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     FaMaTS is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU Lesser General Public License for more details.
+ *
+ *     You should have received a copy of the GNU Lesser General Public License
+ *     along with FaMaTS.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 public class AttributedWriter implements IWriter {
 
@@ -76,8 +90,8 @@ public class AttributedWriter implements IWriter {
 		writer.write("\n");// blank
 
 		while (consColIt.hasNext()) {
-			//FIXME
-			writer.write(consColIt.next());
+			writer.write(consColIt.next());// el maquina de jesus tenia hecho el
+			// recorrido inorden del AST xD
 			writer.write("\n");// blank
 		}
 		writer.write("\n");// blank
@@ -100,17 +114,8 @@ public class AttributedWriter implements IWriter {
 			Constraint cons = constIt.next();
 			if (!(cons.toString() == " ")
 					|| !constraintsCol.contains(cons.toString() + ";"))
-				if(cons instanceof RequiresDependency){
-					String origin=((RequiresDependency)cons).getOrigin().getName();
-					String dest=((RequiresDependency)cons).getDestination().getName();
-					constraintsCol.add(origin+" REQUIRES "+dest+ ";");
-				}else if(cons instanceof ExcludesDependency){
-					String origin=((ExcludesDependency)cons).getOrigin().getName();
-					String dest=((ExcludesDependency)cons).getDestination().getName();
-					constraintsCol.add(origin+" EXCLUDES "+dest+ ";");
-				}else{
-					constraintsCol.add(cons.toString() + ";");
-				}		}
+				constraintsCol.add(cons.toString() + ";");
+		}
 
 		// rel &attribs
 		// las constrainsts aparte// recorrido del ast
