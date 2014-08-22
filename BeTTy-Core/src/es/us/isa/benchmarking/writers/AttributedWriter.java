@@ -90,7 +90,14 @@ public class AttributedWriter implements IWriter {
 		writer.write("\n");// blank
 
 		while (consColIt.hasNext()) {
-			writer.write(consColIt.next());// el maquina de jesus tenia hecho el
+			String string = consColIt.next().toString();
+			if(string.contains("excludes")){
+				string=string.replace("excludes", "EXCLUDES");
+			}
+			if(string.contains("requires")){
+				string=string.replace("requires", "REQUIRES");
+			}
+			writer.write(string);// el maquina de jesus tenia hecho el
 			// recorrido inorden del AST xD
 			writer.write("\n");// blank
 		}
